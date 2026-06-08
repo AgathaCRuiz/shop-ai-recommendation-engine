@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:dummyjson.com)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-2023/thumbnail.webp\")",
+      "Bash(npx next *)",
+      "WebFetch(domain:localhost)",
+      "PowerShell(npx tsc --noEmit --pretty 2>&1 | Select-Object -First 30)",
+      "PowerShell(npx tsc --noEmit --pretty 2>&1)"
+    ]
+  }
+}
