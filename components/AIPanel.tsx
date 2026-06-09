@@ -2,7 +2,7 @@
 import { ReactNode } from 'react'
 
 interface AIPanelProps {
-  icon: string
+  icon: ReactNode
   title: string
   subtitle: string
   children: ReactNode

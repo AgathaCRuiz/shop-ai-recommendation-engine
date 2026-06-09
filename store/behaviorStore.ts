@@ -5,12 +5,14 @@ interface BehaviorStore {
   viewed: ViewedProduct[]
   cart: Product[]
   sessionStart: Date
+  activeProfile: string | null
 
   viewProduct: (product: Product) => void
   addToCart: (product: Product) => void
   removeFromCart: (id: number) => void
   clearCart: () => void
   clearHistory: () => void
+  loadProfile: (viewed: ViewedProduct[], cart: Product[], profileId: string, sessionStart: Date) => void
 
   // Derived
   cartTotal: () => number
@@ -23,6 +25,7 @@ export const useBehaviorStore = create<BehaviorStore>((set, get) => ({
   viewed: [],
   cart: [],
   sessionStart: new Date(),
+  activeProfile: null,
 
   viewProduct: (product) => {
     set((state) => {
@@ -52,7 +55,10 @@ export const useBehaviorStore = create<BehaviorStore>((set, get) => ({
     set((state) => ({ cart: state.cart.filter(c => c.id !== id) })),
 
   clearCart: () => set({ cart: [] }),
-  clearHistory: () => set({ viewed: [], cart: [] }),
+  clearHistory: () => set({ viewed: [], cart: [], activeProfile: null, sessionStart: new Date() }),
+
+  loadProfile: (viewed, cart, profileId, sessionStart) =>
+    set({ viewed, cart, activeProfile: profileId, sessionStart }),
 
   cartTotal: () => Math.round(get().cart.reduce((sum, p) => sum + p.price, 0) * 100) / 100,
 

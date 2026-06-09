@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
 import { useBehaviorStore } from '@/store/behaviorStore'
+import { PROFILES } from '@/lib/profiles'
+import ProfileSwitcher from './ProfileSwitcher'
 
 const tabs = [
   { id: 'catalog', label: 'Catálogo', icon: '◈' },
@@ -17,6 +18,12 @@ interface NavbarProps {
 export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
   const cart = useBehaviorStore(s => s.cart)
   const viewed = useBehaviorStore(s => s.viewed)
+  const activeProfile = useBehaviorStore(s => s.activeProfile)
+
+  // Iniciais para o avatar: perfil ativo ou fallback "AG"
+  const profileInitials = activeProfile
+    ? PROFILES.find(p => p.id === activeProfile)?.initials ?? 'AG'
+    : 'AG'
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl shadow-sm">
@@ -70,9 +77,7 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
               </div>
             )}
           </div>
-          <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white">
-            AG
-          </div>
+          <ProfileSwitcher activeInitials={profileInitials} />
         </div>
       </div>
 
