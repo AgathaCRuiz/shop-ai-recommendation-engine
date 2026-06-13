@@ -5,7 +5,7 @@ import { useBehaviorStore } from '@/store/behaviorStore'
 import { getCategoryIcon } from '@/components/catalog/CategoryIcons'
 import { PROFILES } from '@/lib/profiles'
 import {
-  X, Eye, ShoppingCart, Clock, Tag, DollarSign, ChevronRight
+  X, Clock, Eye, ShoppingCart, DollarSign, TrendingUp
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -35,12 +35,7 @@ export default function SessionHistoryModal({ open, onClose }: Props) {
   const totalViews = viewed.length
   const totalCart = cart.length
   const totalSpent = cart.reduce((s, p) => s + p.price, 0)
-  const avgRating = viewed.length
-    ? (viewed.reduce((s, p) => s + p.rating, 0) / viewed.length).toFixed(1)
-    : '—'
-
-  // Categorias únicas exploradas
-  const exploredCats = new Set(viewed.map(p => p.category)).size
+  const conversionRate = totalViews > 0 ? Math.round((totalCart / totalViews) * 100) : 0
 
   function handleClose() {
     setVisible(false)
@@ -49,45 +44,25 @@ export default function SessionHistoryModal({ open, onClose }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-start justify-center p-4 pt-[8vh] overflow-y-auto
-        transition-all duration-200
-        ${visible ? 'bg-black/70 backdrop-blur-sm' : 'bg-transparent'}`}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 overflow-y-auto"
       onClick={handleClose}
     >
       <div
-        className={`w-full max-w-3xl rounded-2xl transition-all duration-300
+        className={`w-full max-w-2xl rounded-2xl bg-white transition-all duration-300 my-8
           ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
         style={{
-          background: '#fff',
-          boxShadow: '0 4px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            {/* Profile avatar */}
-            {profile && (
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold text-white shadow-sm shadow-blue-200">
-                {profile.initials}
-              </div>
-            )}
-            <div>
-              <div className="flex items-center gap-2">
-                <h2
-                  className="text-sm font-semibold text-slate-900"
-                  style={{ fontFamily: 'var(--font-display)' }}
-                >
-                  {profile ? `Histórico de ${profile.name}` : 'Histórico da Sessão'}
-                </h2>
-                {profile && <span className="text-sm">{profile.emoji}</span>}
-              </div>
-              <p className="text-[11px] text-slate-500">
-                {profile?.description ?? 'Produtos visualizados e no carrinho'}
-              </p>
-            </div>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              {profile ? `Histórico de ${profile.name}` : 'Histórico da Sessão'}
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">{profile?.description ?? 'Histórico de compra e interações'}</p>
           </div>
-
           <button
             onClick={handleClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center
@@ -97,57 +72,83 @@ export default function SessionHistoryModal({ open, onClose }: Props) {
           </button>
         </div>
 
-        {/* ── Quick stats ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-5 py-4 border-b border-slate-100">
-          <StatPill icon={Eye} label="Visualizados" value={totalViews} color="blue" />
-          <StatPill icon={ShoppingCart} label="No carrinho" value={totalCart} color="emerald" />
-          <StatPill icon={DollarSign} label="Total carrinho" value={`R$${totalSpent.toFixed(0)}`} color="amber" />
-          <StatPill icon={Tag} label="Categorias" value={exploredCats} color="violet" />
+        {/* ── Stats Grid ── */}
+        <div className="grid grid-cols-4 gap-3 px-6 py-4 border-b border-slate-100">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Eye className="w-3.5 h-3.5 text-blue-500" />
+              <p className="text-sm font-bold text-slate-900">{totalViews}</p>
+            </div>
+            <p className="text-[10px] text-slate-500">Visualizados</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <ShoppingCart className="w-3.5 h-3.5 text-emerald-500" />
+              <p className="text-sm font-bold text-slate-900">{totalCart}</p>
+            </div>
+            <p className="text-[10px] text-slate-500">No carrinho</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <DollarSign className="w-3.5 h-3.5 text-amber-500" />
+              <p className="text-sm font-bold text-slate-900">R${totalSpent.toFixed(0)}</p>
+            </div>
+            <p className="text-[10px] text-slate-500">Total</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <TrendingUp className="w-3.5 h-3.5 text-violet-500" />
+              <p className="text-sm font-bold text-slate-900">{conversionRate}%</p>
+            </div>
+            <p className="text-[10px] text-slate-500">Conversão</p>
+          </div>
         </div>
 
-        {/* ── Product Grid ── */}
-        <div className="p-5">
+        {/* ── Content ── */}
+        <div className="p-6">
           {/* Carrinho section */}
           {cart.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded-md bg-emerald-100 flex items-center justify-center">
-                  <ShoppingCart className="w-3 h-3 text-emerald-600" />
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <ShoppingCart className="w-4 h-4 text-emerald-600" />
                 </div>
-                <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
-                  No Carrinho
-                </h3>
-                <span className="text-[10px] text-slate-400">{cart.length} item{cart.length > 1 ? 's' : ''}</span>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">No Carrinho</h3>
+                  <p className="text-[11px] text-slate-500">{totalCart} item{totalCart > 1 ? 's' : ''} adicionado{totalCart > 1 ? 's' : ''}</p>
+                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {cart.map(p => (
-                  <ProductMiniCard key={`cart-${p.id}`} product={p} variant="cart" />
+                {cart.map((p, i) => (
+                  <ProductMiniCard key={`cart-${p.id}-${i}`} product={p} variant="cart" stepNumber={i + 1} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Vistos section */}
+          {/* Visualizados section */}
           {viewed.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center">
-                  <Eye className="w-3 h-3 text-blue-600" />
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Eye className="w-4 h-4 text-blue-600" />
                 </div>
-                <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
-                  Visualizados
-                </h3>
-                <span className="text-[10px] text-slate-400">{viewed.length} produto{viewed.length > 1 ? 's' : ''}</span>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">Visualizados</h3>
+                  <p className="text-[11px] text-slate-500">{totalViews} produto{totalViews > 1 ? 's' : ''} visualizado{totalViews > 1 ? 's' : ''}</p>
+                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {viewed.map((p, i) => {
                   const minsAgo = Math.floor((Date.now() - new Date(p.viewedAt).getTime()) / 60000)
+                  const timeLabel = minsAgo === 0 ? 'agora' : minsAgo < 60 ? `${minsAgo}min` : `${Math.floor(minsAgo / 60)}h`
                   return (
                     <ProductMiniCard
                       key={`viewed-${p.id}-${i}`}
                       product={p}
                       variant="viewed"
-                      timeAgo={minsAgo === 0 ? 'agora' : minsAgo < 60 ? `${minsAgo}min` : `${Math.floor(minsAgo / 60)}h`}
+                      timeAgo={timeLabel}
+                      stepNumber={i + 1}
                     />
                   )
                 })}
@@ -158,7 +159,7 @@ export default function SessionHistoryModal({ open, onClose }: Props) {
           {cart.length === 0 && viewed.length === 0 && (
             <div className="text-center py-12">
               <Clock className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-              <p className="text-xs text-slate-400">Nenhum produto registrado nesta sessão</p>
+              <p className="text-sm text-slate-400">Nenhum produto registrado nesta sessão</p>
             </div>
           )}
         </div>
@@ -167,41 +168,6 @@ export default function SessionHistoryModal({ open, onClose }: Props) {
   )
 }
 
-/* ── Stat Pill ── */
-
-function StatPill({
-  icon: Icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  label: string
-  value: string | number
-  color: 'blue' | 'emerald' | 'amber' | 'violet'
-}) {
-  const colors = {
-    blue:    { bg: 'bg-blue-50', text: 'text-blue-600' },
-    emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600' },
-    amber:   { bg: 'bg-amber-50', text: 'text-amber-600' },
-    violet:  { bg: 'bg-violet-50', text: 'text-violet-600' },
-  }
-  const c = colors[color]
-
-  return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100">
-      <div className={`w-8 h-8 rounded-lg ${c.bg} flex items-center justify-center`}>
-        <Icon className={`w-3.5 h-3.5 ${c.text}`} />
-      </div>
-      <div>
-        <p className="text-sm font-bold text-slate-900" style={{ fontFamily: 'var(--font-display)' }}>
-          {value}
-        </p>
-        <p className="text-[10px] text-slate-400">{label}</p>
-      </div>
-    </div>
-  )
-}
 
 /* ── Product Mini Card ── */
 
@@ -209,10 +175,12 @@ function ProductMiniCard({
   product,
   variant,
   timeAgo,
+  stepNumber,
 }: {
   product: any
   variant: 'viewed' | 'cart'
   timeAgo?: string
+  stepNumber?: number
 }) {
   const [imgError, setImgError] = useState(false)
 
@@ -243,19 +211,30 @@ function ProductMiniCard({
           </div>
         )}
 
-        {/* Badge */}
-        {variant === 'cart' && (
-          <div className="absolute top-2 right-2">
-            <span className="px-1.5 py-0.5 rounded-md bg-emerald-500 text-[9px] font-bold text-white shadow-sm">
-              🛒 Carrinho
+        {/* Step Badge */}
+        {stepNumber !== undefined && (
+          <div className="absolute top-2 left-2">
+            <span className={`px-2 py-1 rounded-md text-[9px] font-bold text-white shadow-sm
+              ${variant === 'cart' ? 'bg-emerald-500' : 'bg-slate-600'}`}>
+              {stepNumber}º
             </span>
           </div>
         )}
 
+        {/* Time Badge */}
         {timeAgo && (
-          <div className="absolute top-2 left-2">
+          <div className="absolute bottom-2 right-2">
             <span className="px-1.5 py-0.5 rounded-md bg-slate-900/80 text-[9px] text-white shadow-sm">
               {timeAgo}
+            </span>
+          </div>
+        )}
+
+        {/* Cart Badge */}
+        {variant === 'cart' && (
+          <div className="absolute top-2 right-2">
+            <span className="px-1.5 py-0.5 rounded-md bg-emerald-500 text-[9px] font-bold text-white shadow-sm">
+              🛒
             </span>
           </div>
         )}
@@ -265,7 +244,7 @@ function ProductMiniCard({
       <div className="p-2.5">
         <p className="text-[11px] font-medium text-slate-800 truncate mb-1">{product.name}</p>
         <div className="flex items-center justify-between">
-          <p className="text-xs font-bold text-slate-900" style={{ fontFamily: 'var(--font-display)' }}>
+          <p className="text-xs font-bold text-slate-900">
             R$ {product.price.toFixed(2)}
           </p>
           <div className="flex items-center gap-0.5">
